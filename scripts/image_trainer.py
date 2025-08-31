@@ -291,6 +291,7 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
     bdx = 0
     docker_maxi = True
     docker_exit = False
+    docker_percent_exit = False
 
     # time_percent = 0.89
     # time_limit = 15
@@ -529,7 +530,7 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
                     elif "Outoftimepercent" in docker_error:
                         print("Training subprocess Outoftimepercent!", flush=True)
                         docker_failed = False
-                        docker_exit = True
+                        docker_percent_exit = True
                     elif "Outoftimelimit" in docker_error:
                         print("Training subprocess Outoftimelimit!", flush=True)
                         docker_failed = False
@@ -581,12 +582,12 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
 
                     best_lrate = docker_lrate
                     last_lrate = docker_lrate
-                    docker_lrate = docker_lrate*1.5
+                    docker_lrate = docker_lrate*1.3
                     docker_config['learning_rate'] = docker_lrate
 
                     best_unet_lrate = docker_unet_lrate
                     last_unet_lrate = docker_unet_lrate
-                    docker_unet_lrate = docker_unet_lrate*1.5
+                    docker_unet_lrate = docker_unet_lrate*1.3
                     docker_config['unet_lr'] = docker_unet_lrate
 
                     loss_count = loss_count + 1
@@ -604,16 +605,19 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
                     # except docker.errors.NotFound:
                     #     print(f"Container 'your_container_name' not found.", flush=True)
 
+                    if docker_percent_exit:
+                        docker_exit = True
+
                 else:
                     # docker_maxi = False
                     docker_failed = True
 
                     last_lrate = docker_lrate
-                    docker_lrate = docker_lrate*1.3
+                    docker_lrate = docker_lrate*1.1
                     docker_config['learning_rate'] = docker_lrate
 
                     last_unet_lrate = docker_unet_lrate
-                    docker_unet_lrate = docker_unet_lrate*1.3
+                    docker_unet_lrate = docker_unet_lrate*1.1
                     docker_config['unet_lr'] = docker_unet_lrate
 
                     loss_loop = loss_loop + 1
@@ -628,17 +632,17 @@ def run_training(task_id, model, model_type, expected_repo_name, hours_to_comple
                 print(f"Loss count: {loss_count}", flush=True)
                 print(f"Loss loop: {loss_loop}", flush=True)
 
-                if loss_count >= 4:
-                    docker_maxi = False
-                    docker_failed = False
+                # if loss_count >= 4:
+                #     docker_maxi = False
+                #     docker_failed = False
 
                 if docker_exit:
                     docker_maxi = False
                     docker_failed = False
 
-                if docker_lrate > 0.1:
-                    docker_maxi = False
-                    docker_failed = False
+                # if docker_lrate > 0.1:
+                #     docker_maxi = False
+                #     docker_failed = False
 
             except Exception as e:
                 print(f"Failed to get avg loss: {e}", flush=True)
