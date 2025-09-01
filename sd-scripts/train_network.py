@@ -1829,7 +1829,7 @@ def setup_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--last_loss",
         type=float,
-        default=None,
+        default=1.0,
         help="Last loss",
     )
     return parser
