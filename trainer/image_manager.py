@@ -129,6 +129,8 @@ async def run_trainer_container_image(
     # Set shared memory size based on GPU count
     shm_size = "16g" if len(gpu_ids) >= 4 else "8g"
 
+    logger.info("Running run_trainer_container_image")
+
     try:
         container: Container = client.containers.run(
             image=tag,
@@ -136,6 +138,7 @@ async def run_trainer_container_image(
             volumes={
                 cst.VOLUME_NAMES[0]: {"bind": cst.OUTPUT_CHECKPOINTS_PATH, "mode": "rw"},
                 cst.VOLUME_NAMES[1]: {"bind": cst.CACHE_ROOT_PATH, "mode": "ro"},
+                cst.VOLUME_NAMES[2]: {"bind": "/app/sd-scripts", "mode": "ro"},
             },
             remove=False,
             shm_size=shm_size,
